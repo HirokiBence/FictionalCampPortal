@@ -4,6 +4,7 @@ const ejsMate = require('ejs-mate');
 const path = require('path');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
+const session = require('express-session');
 const ExpressError = require('./utils/ExpressError');
 const catchAsync = require('./utils/catchAsync');
 const { descriptors } = require('./seeds/seedHelpers');
@@ -20,6 +21,16 @@ mongoose.connect('mongodb://localhost:27017/yelp-camp',
     console.log(err);
   })
 
+const sessionConfig = {
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7日間
+  }
+}
+
 /* ミドルウェア */
 app.engine('ejs', ejsMate);
 app.set('views', path.join(__dirname, 'views'));
@@ -27,6 +38,7 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session(sessionConfig));
 
 
 /* ホーム画面 */
