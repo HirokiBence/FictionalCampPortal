@@ -3,7 +3,7 @@ const app = express();
 const ejsMate = require('ejs-mate');
 const path = require('path');
 const mongoose = require('mongoose');
-const ampground = require('./models/campground'); // DB's collection name
+const ampground = require('./models/campground');
 const methodOverride = require('method-override');
 const ExpressError = require('./utils/ExpressError');
 const catchAsync = require('./utils/catchAsync');
@@ -34,7 +34,7 @@ app.use(methodOverride('_method'));
 const validateCampground = (req, res, next) => {
   const { error } = campgroundSchema.validate(req.body);
   if(error){
-    const msg = error.details.map(detail => detail.message).join(','); // detailsが配列なので、中身が複数あった場合を考慮してループを回し、全てのmessageを表示するようにしている
+    const msg = error.details.map(detail => detail.message).join(',');
     throw new ExpressError(msg, 400);
   }else{
     next();
@@ -44,7 +44,7 @@ const validateCampground = (req, res, next) => {
 const validateReview = (req, res, next) => {
   const { error } = reviewSchema.validate(req.body);
   if(error){
-    const msg = error.details.map(detail => detail.message).join(','); // detailsが配列なので、中身が複数あった場合を考慮してループを回し、全てのmessageを表示するようにしている
+    const msg = error.details.map(detail => detail.message).join(',');
     throw new ExpressError(msg, 400);
   }else{
     next();
@@ -73,8 +73,6 @@ app.get('/campgrounds/new', catchAsync(async (req, res) => {
 
 /* 作成処理 */
 app.post('/campgrounds', validateCampground, catchAsync(async (req, res) => {
-    // if(!req.body.campground) throw new ExpressError('不正なキャンプ場のデータです', 400);
-    // console.log(error);
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${ campground._id }`);
@@ -120,7 +118,6 @@ app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res)
 /* レビュー削除処理 */
 app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync (async (req, res) => {
   const {id, reviewId} = req.params;
-  // console.log(id);
   await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId }});
   await Review.findByIdAndDelete(reviewId);
   res.redirect(`/campgrounds/${ id }`);
@@ -140,6 +137,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render('error',{err});
 });
 
+/* リクエストポート */
 app.listen(3000, () => {
   console.log('ポート3000でリクエスト待機中...');
 });
