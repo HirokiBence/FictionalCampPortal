@@ -59,52 +59,6 @@ app.get('/', (req, res) => {
 /* campgrounds */
 app.use('/campgrounds', campgroundRoutes);
 
-
-/* キャンプ場の一覧ページ */
-app.get('/campgrounds', catchAsync(async (req, res) => {
-  const campgrounds = await Campground.find({});
-  res.render('campgrounds/index', { campgrounds });
-}));
-
-/* キャンプ場の新規登録ページ */
-app.get('/campgrounds/new', catchAsync(async (req, res) => {
-  res.render('campgrounds/new');
-}));
-
-/* 作成処理 */
-app.post('/campgrounds', validateCampground, catchAsync(async (req, res) => {
-    const campground = new Campground(req.body.campground);
-    await campground.save();
-    res.redirect(`/campgrounds/${ campground._id }`);
-}));
-
-/* キャンプ場の詳細ページ */
-app.get('/campgrounds/:id', catchAsync(async(req, res) => {
-  const campground = await Campground.findById(req.params.id).populate('reviews');
-  // console.log(campground);
-  res.render('campgrounds/show', { campground });
-}));
-
-/* キャンプ場の編集ページ */
-app.get('/campgrounds/:id/edit', catchAsync(async(req, res) => {
-  const campground = await Campground.findById(req.params.id);
-  res.render('campgrounds/edit', { campground });
-}));
-
-/* 更新処理 */
-app.put('/campgrounds/:id', validateCampground, catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
-  res.redirect(`/campgrounds/${ id }`);
-}));
-
-/* 削除処理 */
-app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
-  const { id } = req.params;
-  await Campground.findByIdAndDelete(id);
-  res.redirect('/campgrounds');
-}));
-
 /* レビュー投稿処理 */
 app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res) => {
   const campground = await Campground.findById(req.params.id);
@@ -137,7 +91,6 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render('error',{err});
 });
 
-/* リクエストポート */
 app.listen(3000, () => {
   console.log('ポート3000でリクエスト待機中...');
 });
