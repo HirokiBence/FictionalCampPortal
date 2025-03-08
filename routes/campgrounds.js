@@ -4,6 +4,7 @@ const ExpressError = require('../utils/ExpressError');
 const catchAsync = require('../utils/catchAsync');
 const Campground = require('../models/campground');
 const { campgroundSchema } = require('../schemas');
+const { isLoggedIn } = require('../middleware');
 
 const validateCampground = (req, res, next) => {
   const { error } = campgroundSchema.validate(req.body);
@@ -22,12 +23,12 @@ router.get('/', catchAsync(async (req, res) => {
 }));
 
 /* キャンプ場の新規登録ページ */
-router.get('/new', catchAsync(async (req, res) => {
+router.get('/new', isLoggedIn, catchAsync(async (req, res) => {
   res.render('campgrounds/new');
 }));
 
 /* 作成処理 */
-router.post('/', validateCampground, catchAsync(async (req, res) => {
+router.post('/', isLoggedIn, validateCampground, catchAsync(async (req, res) => {
     const campground = new Campground(req.body.campground);
     await campground.save();
     req.flash('success', '新しいキャンプ場を登録しました');
@@ -45,7 +46,7 @@ router.get('/:id', catchAsync(async(req, res) => {
 }));
 
 /* キャンプ場の編集ページ */
-router.get('/:id/edit', catchAsync(async(req, res) => {
+router.get('/:id/edit', isLoggedIn, catchAsync(async(req, res) => {
   const campground = await Campground.findById(req.params.id);
   if(!campground){
     req.flash('error', 'キャンプ場は見つかりませんでした');
@@ -55,7 +56,7 @@ router.get('/:id/edit', catchAsync(async(req, res) => {
 }));
 
 /* 更新処理 */
-router.put('/:id', validateCampground, catchAsync(async (req, res) => {
+router.put('/:id', isLoggedIn, validateCampground, catchAsync(async (req, res) => {
   const { id } = req.params;
   const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
   req.flash('success', 'キャンプ場を更新しました');
@@ -63,7 +64,7 @@ router.put('/:id', validateCampground, catchAsync(async (req, res) => {
 }));
 
 /* 削除処理 */
-router.delete('/:id', catchAsync(async (req, res) => {
+router.delete('/:id', isLoggedIn, catchAsync(async (req, res) => {
   const { id } = req.params;
   await Campground.findByIdAndDelete(id);
   req.flash('success', 'キャンプ場を削除しました');

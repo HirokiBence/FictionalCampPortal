@@ -1,30 +1,52 @@
 const express = require('express');
-const app = express();
-const ejsMate = require('ejs-mate');
 const path = require('path');
-const methodOverride = require('method-override');
+const mongoose = require('mongoose');
+const ejsMate = require('ejs-mate');
 const session = require('express-session');
 const flash = require('connect-flash');
-const mongoose = require('mongoose');
 const ExpressError = require('./utils/ExpressError');
-const catchAsync = require('./utils/catchAsync');
+const methodOverride = require('method-override');
 const { descriptors } = require('./seeds/seedHelpers');
-const campgroundRoutes = require('./routes/campground');
-const reviewRoutes = require('./routes/review');
-const userRoutes = require('./routes/user');
-const User = require('./models/user');
 const passport = require('passport');
-const LocalStorategy = require('passport-local');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user');
 
-mongoose.connect('mongodb://localhost:27017/yelp-camp',
-  { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
-  .then(() => {
-    console.log('MongoDBコネクションOK!');
-  })
-  .catch(err => {
-    console.log('コネクションエラー！');
-    console.log(err);
-  })
+const userRoutes = require('./routes/users');
+const campgroundRoutes = require('./routes/campgrounds');
+const reviewRoutes = require('./routes/reviews');
+
+async function main() {
+  await mongoose.connect('mongodb://localhost:27017/yelp-camp');
+  console.log('MongoDBコネクションOK!');
+}
+
+main().catch(err => {
+  console.log('コネクションエラー！');
+  console.log(err)
+});
+
+// mongoose.connect('mongodb://localhost:27017/yelp-camp',
+//   { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
+//   .then(() => {
+//     console.log('MongoDBコネクションOK!');
+//   })
+//   .catch(err => {
+//     console.log('コネクションエラー！');
+//     console.log(err);
+//   })
+
+
+const app = express();
+
+/* ミドルウェア */
+app.engine('ejs', ejsMate);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 const sessionConfig = {
   secret: 'keyboard cat',
@@ -35,23 +57,20 @@ const sessionConfig = {
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7日間
   }
 }
-
-/* ミドルウェア */
-app.engine('ejs', ejsMate);
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true }));
-app.use(methodOverride('_method'));
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(session(sessionConfig));
-app.use(flash());
+
+/* passportのセットアップ */
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new LocalStorategy(User.authenticate()));
-passport.serializeUser(User.serializeUser);
-passport.deserializeUser(User.deserializeUser);
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
+app.use(flash());
+
+/* フラッシュのミドルウェア */
 app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   next();
@@ -63,9 +82,9 @@ app.get('/', (req, res) => {
 });
 
 /* Routes */
+app.use('/', userRoutes);
 app.use('/campgrounds', campgroundRoutes);
 app.use('/campgrounds/:id/reviews', reviewRoutes);
-app.use('/', userRoutes);
 
 /* ページが見つかりませんでした */
 app.all('*', (req, res, next) => {
