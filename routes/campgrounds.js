@@ -48,7 +48,12 @@ router.get('/:id', catchAsync(async(req, res) => {
 
 /* キャンプ場の編集ページ */
 router.get('/:id/edit', isLoggedIn, catchAsync(async(req, res) => {
-  const campground = await Campground.findById(req.params.id);
+  const { id } = req.params;
+  const campground = await Campground.findById(id);
+  if(!campground.author.equals(req.user._id)){
+    req.flash('error', '更新する権限がありません');
+    res.redirect('/campgrounds');
+  }
   if(!campground){
     req.flash('error', 'キャンプ場は見つかりませんでした');
     return res.redirect('/campgrounds');
@@ -59,7 +64,12 @@ router.get('/:id/edit', isLoggedIn, catchAsync(async(req, res) => {
 /* 更新処理 */
 router.put('/:id', isLoggedIn, validateCampground, catchAsync(async (req, res) => {
   const { id } = req.params;
-  const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
+  const campground = await Campground.findById(id);
+  if(!campground.author.equals(req.user._id)){
+    req.flash('error', '更新する権限がありません');
+    res.redirect('/campgrounds');
+  }
+  const camp = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
   req.flash('success', 'キャンプ場を更新しました');
   res.redirect(`/campgrounds/${ id }`);
 }));
