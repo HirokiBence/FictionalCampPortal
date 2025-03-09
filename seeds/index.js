@@ -3,8 +3,7 @@ const cities = require('./cities');
 const { descriptors, places } = require('./seedHelpers')
 const Campground = require('../models/campground');
 
-mongoose.connect('mongodb://localhost:27017/yelp-camp',
-{ useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
+mongoose.connect('mongodb://localhost:27017/yelp-camp',)
   .then(() => {
     console.log('MongoDBコネクションOK!');
   })
@@ -22,6 +21,7 @@ const seedDB = async () => {
   for (let i = 0; i < 50; i++){
     const price = Math.floor(Math.random() * 2000) + 1000; 
     const camp = new Campground({
+      author: '67cc6cb7fae2516a07cbce8b',
       title: `${randomIndex(descriptors)}・${randomIndex(places)}`,
       image: `https://picsum.photos/300?random=${Math.random()}`,
       location: `${randomIndex(cities).prefecture}${randomIndex(cities).city}`,
@@ -35,4 +35,5 @@ const seedDB = async () => {
 /* コネクション切断 */
 seedDB().then(() => {
   mongoose.connection.close();
+  console.log('mongoDBコネクション切断完了');
 });

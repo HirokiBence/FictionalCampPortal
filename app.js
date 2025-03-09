@@ -15,39 +15,28 @@ const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
 
-async function main() {
-  await mongoose.connect('mongodb://localhost:27017/yelp-camp');
-  console.log('MongoDBコネクションOK!');
-}
-
-main().catch(err => {
-  console.log('コネクションエラー！');
-  console.log(err)
-});
-
-// mongoose.connect('mongodb://localhost:27017/yelp-camp',
-//   { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
-//   .then(() => {
-//     console.log('MongoDBコネクションOK!');
-//   })
-//   .catch(err => {
-//     console.log('コネクションエラー！');
-//     console.log(err);
-//   })
-
+mongoose.connect('mongodb://localhost:27017/yelp-camp',)
+  .then(() => {
+    console.log('MongoDBコネクションOK!');
+  })
+  .catch(err => {
+    console.log('コネクションエラー！');
+    console.log(err);
+  })
 
 const app = express();
 
-/* ミドルウェア */
+/* ejs */
 app.engine('ejs', ejsMate);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+/* express middleware */
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-
+/* session */
 const sessionConfig = {
   secret: 'keyboard cat',
   resave: false,
@@ -59,16 +48,15 @@ const sessionConfig = {
 }
 app.use(session(sessionConfig));
 
-/* passportのセットアップ */
+/* passport */
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+/* flash */
 app.use(flash());
-
-/* フラッシュのミドルウェア */
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   res.locals.success = req.flash('success');
