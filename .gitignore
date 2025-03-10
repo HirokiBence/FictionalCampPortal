@@ -1,2 +1,5 @@
 # node_modulesディレクトリを除外
 node_modules/
+
+#cloudinary
+.env

@@ -3,10 +3,17 @@ const router = express.Router();
 const catchAsync = require('../utils/catchAsync');
 const campgrounds = require('../controller/campgrounds');
 const { isLoggedIn, validateCampground, isAuthor } = require('../middleware');
+const multer = require('multer');
+const { storage } = require('../cloudinary')
+const upload = multer({ storage });
 
 router.route('/')
   .get(catchAsync(campgrounds.index)) /* キャンプ場の一覧ページ */
-  .post(isLoggedIn, validateCampground, catchAsync(campgrounds.createCampground)); /* 登録処理 */
+  // .post(isLoggedIn, validateCampground, catchAsync(campgrounds.createCampground)); /* 登録処理 */
+  .post(upload.single('image'), (req, res) => {
+    console.log(req.body, req.file);
+    res.send('受け付けました');
+  })
 
 router.get('/new', isLoggedIn, catchAsync(campgrounds.renderNewForm)); /* キャンプ場の新規登録ページ */
 
