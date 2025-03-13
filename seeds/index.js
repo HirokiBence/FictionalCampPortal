@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const cities = require('./cities');
 const { descriptors, places } = require('./seedHelpers')
 const Campground = require('../models/campground');
+const maptilerClient = require("@maptiler/client");
+maptilerClient.config.apiKey = process.env.MAPTILER_KEY;
 
 mongoose.connect('mongodb://localhost:27017/yelp-camp',)
   .then(() => {
@@ -29,6 +31,13 @@ const seedDB = async () => {
         }
       ],
       location: `${randomIndex(cities).prefecture}${randomIndex(cities).city}`,
+      geometry: {
+        type:'Point',
+        coordinates:[
+          randomIndex(cities).longitude,
+          randomIndex(cities).latitude,
+        ],
+      },
       description: 'あのイーハトーヴォのすきとおった風、夏でも底に冷たさをもつ青いそら、うつくしい森で飾られたモリーオ市、郊外のぎらぎらひかる草の波。またそのなかでいっしょになったたくさんのひとたち、ファゼーロとロザーロ、羊飼のミーロや、顔の赤いこどもたち、地主のテーモ、山猫博士のボーガント・デストゥパーゴなど、いまこの暗い巨きな石の建物のなかで考えていると、みんなむかし風のなつかしい青い幻燈のように思われます。では',
       price,
     });

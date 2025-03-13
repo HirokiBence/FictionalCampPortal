@@ -1,5 +1,8 @@
 const Campground = require('../models/campground');
 const { cloudinary } = require('../cloudinary');
+const maptilerClient = require("@maptiler/client");
+maptilerClient.config.apiKey = process.env.MAPTILER_KEY;
+
 
 module.exports.index = async (req, res) => {
   const campgrounds = await Campground.find({});
@@ -11,7 +14,9 @@ module.exports.renderNewForm = async (req, res) => {
 }
 
 module.exports.createCampground = async (req, res) => {
+    const result = await maptilerClient.geocoding.forward(req.body.campground.location);
     const campground = new Campground(req.body.campground);
+    campground.geometry = result.features[0].geometry;
     campground.images = req.files.map(f => ({url: f.path, filename:f.filename}));
     campground.author = req.user._id;
     console.log(campground);

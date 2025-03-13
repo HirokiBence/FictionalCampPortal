@@ -1,5 +1,8 @@
 <% layout('layouts/boilerplate') -%>
 <link rel="stylesheet" type="text/css" href="/stylesheet/stars.css">
+<script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.umd.min.js"></script>
+<link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.1/maptiler-sdk.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="/stylesheet/map.css">
 
 <div class="row">
   <div class="col-6">
@@ -20,10 +23,11 @@
         <span class="visually-hidden">Next</span>
       </button>
       <% } %>
+      </div>
     </div>
     <div class="card mb-3">
       <div class="card-body">
-        <h5 class="card-title"><%= campground.title %></h5>
+        <h2 class="card-title"><%= campground.title %></h2>
         <p class="card-text"><%= campground.description %></p>
       </div>
       <ul class="list-group list-group-flush">
@@ -45,6 +49,7 @@
     </div>
   </div>
   <div class="col-6">
+    <div id="map"></div>
     <% if(currentUser){ %>
     <h2>レビュー</h2>
     <form action="/campgrounds/<%= campground._id %>/reviews" method="POST" class="mb-3 validated-form" novalidate>
@@ -91,3 +96,9 @@
     <% } %>
   </div>
 </div>
+
+<script>
+  const apiKey = `<%= process.env.MAPTILER_KEY %>`
+  const campground = <%- JSON.stringify(campground) %>
+</script>
+<script src="/javascript/showMapPage.js"></script>
