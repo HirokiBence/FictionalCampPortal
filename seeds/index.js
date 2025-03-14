@@ -48,5 +48,5 @@ const seedDB = async () => {
 /* コネクション切断 */
 seedDB().then(() => {
   mongoose.connection.close();
-  console.log('mongoDBコネクション切断完了');
+  console.log('mongoDBコネクション切断完了!');
 });
