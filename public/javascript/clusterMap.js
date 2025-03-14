@@ -6,8 +6,6 @@ maptilersdk.config.apiKey = apiKey;
         style: maptilersdk.MapStyle.DATAVIZ.LIGHT,
     });
 
-console.log(campgrounds);
-
       map.on('load', function () {
         // add a clustered GeoJSON source for a sample set of earthquakes
         map.addSource('campgrounds', {
