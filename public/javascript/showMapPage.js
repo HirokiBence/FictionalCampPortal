@@ -5,7 +5,8 @@ const map = new maptilersdk.Map({
     container: 'map', // container's id or the HTML element in which SDK will render the map
     style: maptilersdk.MapStyle.DATAVIZ.LIGHT,
     center: campground.geometry.coordinates, // starting position [lng, lat]
-    zoom:9 // starting zoom
+    zoom:9, // starting zoom
+    navigationControl: true, 
 });
 
 const marker = new maptilersdk.Marker()
