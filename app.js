@@ -22,7 +22,7 @@ const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
 
-const dbURL = 'mongodb://localhost:27017/yelp-camp';
+const dbURL = process.env.DB_URL || 'mongodb://localhost:27017/yelp-camp';
 
 mongoose.connect(dbURL)
   .then(() => {
@@ -49,12 +49,14 @@ app.use(helmet({
   contentSecurityPolicy: false,
 }));
 
+
 /* session store */
+const secret = process.env.secret || 'mysecret'
 const store = MongoStore.create({
   mongoUrl: dbURL,
   touchAfter: 24 * 3600, // time period in seconds
   crypto: {
-    secret: 'keyboard cat'
+    secret
   }
 })
 
@@ -67,7 +69,7 @@ store.on = e => {
 const sessionConfig = {
   store,
   name: 'session',
-  secret: 'keyboard cat',
+  secret,
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -120,6 +122,7 @@ app.use((err, req, res, next) => {
 });
 
 /* リクエストポート */
-app.listen(3000, () => {
-  console.log('ポート3000でリクエスト待機中...');
+const port = process.env.PORT || 3000
+app.listen(port, () => {
+  console.log(`ポート${port}でリクエスト待機中...`);
 });
