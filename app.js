@@ -16,12 +16,15 @@ const LocalStrategy = require('passport-local');
 const User = require('./models/user');
 const expressMongooseSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
+const MongoStore = require('connect-mongo');
 
 const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
 
-mongoose.connect('mongodb://localhost:27017/yelp-camp',)
+const dbURL = 'mongodb://localhost:27017/yelp-camp';
+
+mongoose.connect(dbURL)
   .then(() => {
     console.log('MongoDBコネクションOK!');
   })
@@ -46,8 +49,23 @@ app.use(helmet({
   contentSecurityPolicy: false,
 }));
 
+/* session store */
+const store = MongoStore.create({
+  mongoUrl: dbURL,
+  touchAfter: 24 * 3600, // time period in seconds
+  crypto: {
+    secret: 'keyboard cat'
+  }
+})
+
+/* セッションエラー */
+store.on = e => {
+  console.log('セッションエラー', e);
+}
+
 /* session */
 const sessionConfig = {
+  store,
   name: 'session',
   secret: 'keyboard cat',
   resave: false,
@@ -70,7 +88,7 @@ passport.deserializeUser(User.deserializeUser());
 /* flash */
 app.use(flash());
 app.use((req, res, next) => {
-  console.log(req.query),
+  // console.log(req.query),
   res.locals.currentUser = req.user;
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
